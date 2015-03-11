@@ -1,0 +1,14 @@
+{
+  "name": "cplayer",
+  "version": "0.0.0",
+  "description": "command line web video player",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qiuxiang/cplayer.git"
+  },
+  "author": "Qiu Xiang <xiang.qiu@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "~0.18.0"
+  }
+}
