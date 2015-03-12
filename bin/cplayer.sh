@@ -26,4 +26,4 @@ urls=$(get_raw_urls "http://v.youku.com/v_show/id_XOTA4MjY1ODI4.html")
 qualitys=$(echo $urls | jq ".fragments | keys")
 choice=$(zenity --height="320" --list --column="视频品质" \
   $(implode "$qualitys"))
-totem $(implode "$(echo $urls | jq .fragments."\"${choice#*|}\"")")
+totem $(implode "$(echo $urls | jq .fragments[\"${choice#*|}\"])")
