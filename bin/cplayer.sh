@@ -9,6 +9,7 @@ get_script_path() {
 SCRIPT_PATH=$(get_script_path)
 ENCODE=$SCRIPT_PATH/scripts/encode.js
 PARSE=$SCRIPT_PATH/scripts/parse.js
+PLAYER=totem
 
 get_raw_urls() {
   $PARSE "$(nodejs -e "
@@ -26,4 +27,4 @@ urls=$(get_raw_urls $1)
 qualitys=$(echo $urls | jq ".fragments | keys")
 choice=$(zenity --height=320 --list --column=视频品质 \
   $(implode $qualitys))
-totem $(implode $(echo $urls | jq .fragments[\"${choice#*|}\"]))
+$PLAYER $(implode $(echo $urls | jq .fragments[\"${choice#*|}\"]))
