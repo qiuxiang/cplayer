@@ -7,16 +7,17 @@ get_script_path() {
 }
 
 SCRIPT_PATH=$(get_script_path)
-ENCODE=$SCRIPT_PATH/scripts/encode.js
-PARSE=$SCRIPT_PATH/scripts/parse.js
+URL_ENCODE=$SCRIPT_PATH/scripts/encode.js
+RESULT_PARSE=$SCRIPT_PATH/scripts/parse.js
+NODEJS=nodejs
 PLAYER=totem
 
 get_raw_urls() {
-  $PARSE "$(nodejs -e "
-    function flvout (html) { console.log(html) }
-    $(curl -s -H "referer: http://flv.cn" \
-        https://www.flvxz.com/getFlv.php?url=$($ENCODE "$1") \
-      | grep -o "eval.*));")")"
+  local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
+  local code=$(curl -s -H "referer: http://flv.cn" $url | grep -o "eval.*));")
+  local result=$($NODEJS -e "
+    function flvout (html) { console.log(html) } $code")
+  $RESULT_PARSE "$result"
 }
 
 implode() {
@@ -24,7 +25,7 @@ implode() {
 }
 
 urls=$(get_raw_urls $1)
+[ "$(echo $urls | jq .fragments)" = {} ] && echo 无法获取播放地址 && exit 1
 qualitys=$(echo $urls | jq ".fragments | keys")
-choice=$(zenity --height=320 --list --column=视频品质 \
-  $(implode $qualitys))
+choice=$(zenity --height=320 --list --column= $(implode $qualitys))
 $PLAYER $(implode $(echo $urls | jq .fragments[\"${choice#*|}\"]))
