@@ -7,8 +7,8 @@ get_script_path() {
 }
 
 SCRIPT_PATH=$(get_script_path)
-URL_ENCODE=$SCRIPT_PATH/scripts/encode.js
-RESULT_PARSE=$SCRIPT_PATH/scripts/parse.js
+URL_ENCODE=$SCRIPT_PATH/nodejs/encode.js
+RESULT_PARSE=$SCRIPT_PATH/nodejs/parse.js
 NODEJS=nodejs
 PLAYER=totem
 
