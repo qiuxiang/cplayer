@@ -34,16 +34,18 @@ implode() {
 
 print_help() {
   cat << EOF
-用法: $0 [-p player | -u url]
+用法: $0 [-p player]
 
 选项:
   -p player    指定播放器
-  -u url       要播放的视频地址 
 EOF
 }
 
 main() {
-  [ -z "$URL" ] && URL=$($ZENITY --entry --text=视频地址：)
+  # 尝试从粘贴板获取视频地址
+  command -v xclip > /dev/null && URL=$(xclip -selection clipboard -o)
+  URL=$($ZENITY --entry --width=400 --text=视频地址： --entry-text="$URL")
+  [ -z "$URL" ] && exit 1
   echo 视频地址：$URL
   echo 正在获取播放地址……
 
@@ -55,8 +57,9 @@ main() {
   printf "选择播放源："
 
   local qualitys=$(echo $urls | jq ".fragments | keys")
-  local choice=$($ZENITY --height=320 --list --column= $(implode $qualitys))
-  [ -z "$choice" ] && echo -e "\n取消选择。" && exit 1
+  local choice=$($ZENITY \
+    --height=273 --list --column= --text=选择播放源： $(implode $qualitys))
+  [ -z "$choice" ] && exit 1
 
   # 双击选择的时候，zenity 会返回两个相同的用“|”分隔的结果，
   # 如“分段_高清_FLV|分段_高清_FLV”，只需要保留一个。
@@ -66,10 +69,9 @@ main() {
   $PLAYER $(implode $(echo $urls | jq .fragments[\"$choice\"]))
 }
 
-while getopts p:u:h opt; do
+while getopts p:h opt; do
   case $opt in
     p) PLAYER=$OPTARG ;;
-    u) URL=$OPTARG ;;
     h) print_help; exit ;;
   esac
 done
