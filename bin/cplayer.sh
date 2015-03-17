@@ -9,8 +9,15 @@ get_script_path() {
 SCRIPT_PATH=$(get_script_path)
 URL_ENCODE=$SCRIPT_PATH/nodejs/encode.js
 RESULT_PARSE=$SCRIPT_PATH/nodejs/parse.js
-NODEJS=nodejs
-PLAYER=totem
+
+command -v nodejs > /dev/null && NODEJS=nodejs
+command -v node > /dev/null && NODEJS=node
+test -z "$NODEJS" && echo "Node.js required" && exit 1
+
+command -v mplayer > /dev/null && PLAYER=mplayer
+command -v vlc > /dev/null && PLAYER=vlc
+command -v totem > /dev/null && PLAYER=totem
+test -z "$PLAYER" && echo "totem or vlc or mplayer required" && exit 1
 
 get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
