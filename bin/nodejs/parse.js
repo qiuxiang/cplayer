@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var $ = require('cheerio').load(process.argv[2])
   , result = {
       fragments: {}

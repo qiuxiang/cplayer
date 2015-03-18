@@ -6,11 +6,6 @@ get_script_path() {
   popd > /dev/null
 }
 
-SCRIPT_PATH=$(get_script_path)
-URL_ENCODE=$SCRIPT_PATH/nodejs/encode.js
-RESULT_PARSE=$SCRIPT_PATH/nodejs/parse.js
-ZENITY="zenity --title="
-
 command -v nodejs > /dev/null && NODEJS=nodejs
 command -v node > /dev/null && NODEJS=node
 [ -z "$NODEJS" ] && echo "Node.js required" && exit 1
@@ -19,6 +14,11 @@ command -v mplayer > /dev/null && PLAYER=mplayer
 command -v vlc > /dev/null && PLAYER=vlc
 command -v totem > /dev/null && PLAYER=totem
 [ -z "$PLAYER" ] && echo "totem or vlc or mplayer required" && exit 1
+
+SCRIPT_PATH=$(get_script_path)
+URL_ENCODE="$NODEJS $SCRIPT_PATH/nodejs/encode.js"
+RESULT_PARSE="$NODEJS $SCRIPT_PATH/nodejs/parse.js"
+ZENITY="zenity --title="
 
 get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
