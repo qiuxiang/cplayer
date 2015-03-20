@@ -16,8 +16,8 @@ command -v totem > /dev/null && PLAYER=totem
 [ -z "$PLAYER" ] && echo "totem or vlc or mplayer required" && exit 1
 
 SCRIPT_PATH=$(get_script_path)
-URL_ENCODE="$NODEJS $SCRIPT_PATH/nodejs/encode.js"
-RESULT_PARSE="$NODEJS $SCRIPT_PATH/nodejs/parse.js"
+URL_ENCODE="$NODEJS $SCRIPT_PATH/encode.js"
+RESULT_PARSE="python $SCRIPT_PATH/parse.py"
 ZENITY="zenity --title="
 
 get_raw_urls() {
