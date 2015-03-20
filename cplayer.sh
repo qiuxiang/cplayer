@@ -19,6 +19,7 @@ SCRIPT_PATH=$(get_script_path)
 URL_ENCODE="$NODEJS $SCRIPT_PATH/encode.js"
 RESULT_PARSE="python $SCRIPT_PATH/parse.py"
 ZENITY="zenity --title="
+PATH_URL=/tmp/url
 
 get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
@@ -44,8 +45,9 @@ EOF
 main() {
   # 尝试从粘贴板获取视频地址
   command -v xclip > /dev/null && URL=$(xclip -selection clipboard -o)
-  URL=$($ZENITY --entry --width=400 --text=视频地址： --entry-text="$URL")
-  [ -z "$URL" ] && exit 1
+  dialog --inputbox 视频地址 8 64 "$URL" 2> $PATH_URL
+  [ $? = 1 ] && exit 1
+  URL=$(cat $PATH_URL)
   echo 视频地址：$URL
   echo 正在获取播放地址……
 
@@ -66,7 +68,7 @@ main() {
   choice=${choice#*|}
   echo $choice
 
-  $PLAYER $(implode $(echo $urls | jq .fragments[\"$choice\"]))
+  $PLAYER $(implode $(echo $urls | jq .fragments[\"$choice\"])) 2> /dev/null
 }
 
 while getopts p:h opt; do
