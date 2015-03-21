@@ -25,8 +25,9 @@ RESULT_PARSE="python $PATH_SCRIPT/parse.py"
 ZENITY="zenity --title="
 INPUT_METHOD=dialog
 
-[ -d $PATH_CACHE ] || mkdir $PATH_CACHE
-
+#
+# 获取并解析视频播放地址
+#
 get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
   local data=$(curl -s -H "referer: http://flv.cn" $url | grep -o "eval.*));")
@@ -34,6 +35,9 @@ get_raw_urls() {
   $RESULT_PARSE "$($NODEJS $PATH_JS_DATA)"
 }
 
+#
+# 合并 JSON 数组
+#
 implode() {
   echo ${@//[\[\]\",]/}
 }
@@ -79,6 +83,8 @@ main() {
 
   $PLAYER $(implode $(echo $urls | jq .fragments[\"$choice\"])) 2> /dev/null
 }
+
+[ -d $PATH_CACHE ] || mkdir $PATH_CACHE
 
 while getopts p:h opt; do
   case $opt in
