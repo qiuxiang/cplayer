@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-get_script_path() {
-  pushd $(dirname "$0") > /dev/null
-  echo $(pwd)
-  popd > /dev/null
-}
-
 command -v nodejs > /dev/null && NODEJS=nodejs
 command -v node > /dev/null && NODEJS=node
 [ -z "$NODEJS" ] && echo "Node.js required" && exit 1
@@ -15,18 +9,29 @@ command -v vlc > /dev/null && PLAYER=vlc
 command -v totem > /dev/null && PLAYER=totem
 [ -z "$PLAYER" ] && echo "totem or vlc or mplayer required" && exit 1
 
-SCRIPT_PATH=$(get_script_path)
-URL_ENCODE="$NODEJS $SCRIPT_PATH/encode.js"
-RESULT_PARSE="python $SCRIPT_PATH/parse.py"
+get_script_path() {
+  pushd $(dirname "$0") > /dev/null
+  echo $(pwd)
+  popd > /dev/null
+}
+
+PATH_SCRIPT=$(get_script_path)
+PATH_CACHE=$HOME/.cache/
+PATH_INPUT_URL=$PATH_CACHE/input_url
+PATH_JS_DATA=$PATH_CACHE/data.js
+
+URL_ENCODE="$NODEJS $PATH_SCRIPT/encode.js"
+RESULT_PARSE="python $PATH_SCRIPT/parse.py"
 ZENITY="zenity --title="
-PATH_URL=/tmp/url
+INPUT_METHOD=dialog
+
+[ -d $PATH_CACHE ] || mkdir $PATH_CACHE
 
 get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
-  local code=$(curl -s -H "referer: http://flv.cn" $url | grep -o "eval.*));")
-  local result=$($NODEJS -e "
-    function flvout (html) { console.log(html) } $code")
-  $RESULT_PARSE "$result"
+  local data=$(curl -s -H "referer: http://flv.cn" $url | grep -o "eval.*));")
+  echo "function flvout (html) { console.log(html) } $data" > $PATH_JS_DATA
+  $RESULT_PARSE "$($NODEJS $PATH_JS_DATA)"
 }
 
 implode() {
@@ -42,12 +47,16 @@ print_help() {
 EOF
 }
 
+input_text() {
+  sl
+}
+
 main() {
   # 尝试从粘贴板获取视频地址
   command -v xclip > /dev/null && URL=$(xclip -selection clipboard -o)
-  dialog --inputbox 视频地址 8 64 "$URL" 2> $PATH_URL
+  dialog --inputbox 视频地址 8 64 "$URL" 2> $PATH_INPUT_URL
   [ $? = 1 ] && exit 1
-  URL=$(cat $PATH_URL)
+  URL=$(cat $PATH_INPUT_URL)
   echo 视频地址：$URL
   echo 正在获取播放地址……
 
@@ -60,7 +69,7 @@ main() {
 
   local qualitys=$(echo $urls | jq ".fragments | keys")
   local choice=$($ZENITY \
-    --height=273 --list --column= --text=选择播放源： $(implode $qualitys))
+    --height=320 --list --column= --text=选择播放源： $(implode $qualitys))
   [ -z "$choice" ] && exit 1
 
   # 双击选择的时候，zenity 会返回两个相同的用“|”分隔的结果，
