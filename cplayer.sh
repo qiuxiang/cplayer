@@ -55,7 +55,15 @@ input_text() {
   sl
 }
 
+init_input_method() {
+  sl
+}
+
 main() {
+  [ -d $PATH_CACHE ] || mkdir $PATH_CACHE
+
+  init_input_method()
+
   # 尝试从粘贴板获取视频地址
   command -v xclip > /dev/null && URL=$(xclip -selection clipboard -o)
   dialog --inputbox 视频地址 8 64 "$URL" 2> $PATH_INPUT_URL
@@ -83,8 +91,6 @@ main() {
 
   $PLAYER $(implode $(echo $urls | jq .fragments[\"$choice\"])) 2> /dev/null
 }
-
-[ -d $PATH_CACHE ] || mkdir $PATH_CACHE
 
 while getopts p:h opt; do
   case $opt in
