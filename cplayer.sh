@@ -32,7 +32,7 @@ get_raw_urls() {
   local url=https://www.flvxz.com/getFlv.php?url=$($URL_ENCODE "$1")
   local data=$(curl -s -H "referer: http://flv.cn" $url | grep -o "eval.*));")
   echo "function flvout (html) { console.log(html) } $data" > $PATH_JS_DATA
-  $RESULT_PARSE "$($NODEJS $PATH_JS_DATA)"
+  $RESULT_PARSE "$($NODEJS $PATH_JS_DATA)" 2> /dev/null
 }
 
 #
@@ -62,7 +62,7 @@ init_input_method() {
 main() {
   [ -d $PATH_CACHE ] || mkdir $PATH_CACHE
 
-  init_input_method()
+  init_input_method
 
   # 尝试从粘贴板获取视频地址
   command -v xclip > /dev/null && URL=$(xclip -selection clipboard -o)
@@ -73,7 +73,8 @@ main() {
   echo 正在获取播放地址……
 
   local urls=$(get_raw_urls $URL)
-  [ "$(echo $urls | jq .fragments)" = {} ] && echo 获取播放地址失败 && exit 1
+  [ -z "$urls" ] && echo 获取播放地址失败 && exit 1
+  [ "$(echo $urls | jq .fragments)" = {} ] && echo 没有相应的播放地址 && exit 1
 
   printf "解析结果："
   echo $urls | jq .fragments
